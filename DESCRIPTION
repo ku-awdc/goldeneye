@@ -1,13 +1,60 @@
 Package: goldeneye
-Title: What the Package Does (One Line, Title Case)
-Version: 0.1.0-1
+Title: Sharing Secrets Safely
+Date: 2022-03-19
+Version: 0.5.0-1
 Authors@R: 
-    person("Matt", "Denwood", , "md@sund.ku.dk", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+    c(
+    person(given = "Matt",
+           family = "Denwood",
+           role = c("aut", "cre"),
+           email = "md@sund.ku.dk"),
+    person(given = "Mossa Merhi",
+           family = "Reimert",
+           role = c("ctb"),
+           email = "mossa@sund.ku.dk"),
+    person(given = "Maya Katrin",
+           family = "Gussmann",
+           role = c("ctb"),
+           email = "makg@sund.ku.dk"),
+    person(given = "S\u00f8ren Saxmose",
+           family = "Nielsen",
+           role = c("ctb"),
+           email = "saxmose@sund.ku.dk"),
+    person(given = "Francisco Fernando",
+           family = "Calvo-Artavia",
+           role = c("ctb"),
+           email = "FRAFE@fvst.dk"),
+    person(given = "Ivana Rodriguez",
+           family = "Ewerl\u00f6f",
+           role = c("ctb"),
+           email = "ivana.ewerlof@sva.se"),
+    person(given = "Jessica",
+           family = "Enright",
+           role = c("ctb"),
+           email = "Jessica.Enright@glasgow.ac.uk")
+    )
+Description: The goldeneye package is designed to allow data to safely be shared
+  between R users over insecure channels.  While it does require using R, the 
+  interfaces are written to be as simple as possible in order to reduce the 
+  technical barrier for beginner R users.  This package was developed as part
+  of the NordForsk-funded DigiVet project.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
+Imports:
+    rstudioapi,
+    base64enc,
+    keyring,
+    getPass,
+    sodium (>= 1.1),
+    Rcpp (>= 1.0.8),
+    qs (>= 0.25),
+    cyphr,
+    stringr
+Depends:
+    R (>= 3.5.0),
+    tidyverse
 Suggests: 
     knitr,
     rmarkdown,
