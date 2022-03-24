@@ -43,7 +43,7 @@ library("goldeneye")
 
 ## Setup
 
-In order to use the package you first need to set up a goldfinger profile.  To do that, run the following function:
+In order to use the package you first need to set up a goldeneye profile.  To do that, run the following function:
 
 ```{r eval=FALSE}
 gy_setup()
@@ -54,9 +54,9 @@ keyring::key_set_with_value("goldeneye", "test@test.com", "test")
 gy_setup(name = "Test User", email="test@test.com", filename="goldeneye_private.gyp", path=getwd(), append_Rprofile = FALSE)
 ```
 
-You will be asked to enter your name, an email address, and a password that will be used to secure your personal goldfinger profile.  The password is stored in the secure registry on your computer, so you do not need to enter it every time you restart R, but you will need to re-enter your password if you change computers - so use a password that you will remember, or better still use a password manager!
+You will be asked to enter your name, an email address, and a password that will be used to secure your personal goldeneye profile.  The password is stored in the secure registry on your computer, so you do not need to enter it every time you restart R, but you will need to re-enter your password if you change computers - so use a password that you will remember, or better still use a password manager!
 
-Once setup is complete, a goldfinger profile is created and saved as a .gyp file.  This file contains the following information:
+Once setup is complete, a goldeneye profile is created and saved as a .gyp file.  This file contains the following information:
 
 - Your name and email address
 
