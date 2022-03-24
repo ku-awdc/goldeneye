@@ -11,7 +11,7 @@
 #'
 #' @rdname gy_saveRDS
 #' @export
-gy_saveRDS <- function(object, file=stop("file must be specified (.rdg file extension is recommended)"), user=character(0), local_user=TRUE, comment = "", overwrite=FALSE, ascii = FALSE, funs = list(type="identity"), ...){
+gy_saveRDS <- function(object, file=stop("file must be specified (.rdg file extension is recommended)"), users=character(0), local_user=TRUE, comment = "", overwrite=FALSE, ascii = FALSE, funs = list(type="identity"), ...){
 
   if(file.exists(file) && !overwrite) stop("Specified file exists: use overwrite=TRUE if necessary", call.=FALSE)
 
@@ -23,7 +23,7 @@ gy_saveRDS <- function(object, file=stop("file must be specified (.rdg file exte
 
   ## Serialise and encrypt:
   ser_obj <- gy_serialise(object, ...)
-  enc_obj <- gy_encrypt(ser_obj, user=user, local_user=local_user, comment = comment, funs = funs)
+  enc_obj <- gy_encrypt(ser_obj, users=users, local_user=local_user, comment = comment, funs = funs)
 
   ## Add the gy_type:
   enc_obj$metadata$gy_type <- gy_type

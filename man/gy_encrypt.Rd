@@ -3,20 +3,31 @@
 \name{gy_encrypt}
 \alias{gy_encrypt}
 \alias{gy_decrypt}
+\alias{get_public_keys}
 \title{Encrypt and decrypt a pre-serialised object using goldeneye}
 \usage{
 gy_encrypt(
   object,
-  user = character(0),
+  users = character(0),
   local_user = TRUE,
   comment = "",
-  funs = list(type = "identity")
+  funs = gy_key_funs("identity")
 )
 
 gy_decrypt(object, run_custom = TRUE)
+
+get_public_keys(users, type = "curve")
 }
 \arguments{
-\item{overwrite}{}
+\item{object}{the serialised object to encrypt}
+
+\item{users}{a character vector of (other) users within your current user group for whom the encrypted file will be decryptable. Alternatively, this can be a vector of paths/urls to public keys, or a mixture of the two.}
+
+\item{local_user}{should the current user also be able to decrypt thw file?}
+
+\item{comment}{an optional comment that will be sent (unencrypted) along with the file}
+
+\item{funs}{optional additional encryption steps: this must be the output of a call to \code{\link{gy_key_funs}}}
 }
 \description{
 Encrypt and decrypt a pre-serialised object using goldeneye

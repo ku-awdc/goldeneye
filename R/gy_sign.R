@@ -31,7 +31,7 @@ gy_sign <- function(object, method="hash"){
 
   ## Get private and public keys for this user:
   local <- get_localuser()
-  private_ed <- get_gykey(local$group, local$user, local$salt, local$encr_ed)
+  private_ed <- get_gykey(local$email, local$salt, local$encr_ed)
   public_ed <- local$public_ed
   public_test <- sig_pubkey(private_ed)
   if(!identical(public_ed, public_test)) stop("Something went wrong: the public ed key cannot be regenerated", call.=FALSE)
@@ -78,7 +78,7 @@ gy_verify <- function(object, signature, public_ed = NULL, silent=FALSE){
       stop("The provided signature does not have a 'user' attribute", call.=FALSE)
     }
     warning("FIXME\n")
-    public_ed <- get_public_key(usrattr, "ed")
+    public_ed <- get_public_keys(usrattr, "ed")
   }
 
   ## Verify:

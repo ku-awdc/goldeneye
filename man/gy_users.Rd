@@ -4,7 +4,7 @@
 \alias{gy_users}
 \title{Title}
 \usage{
-gy_users(group = NULL, refresh = FALSE, redact = FALSE)
+gy_users(group = NULL, refresh = FALSE)
 }
 \arguments{
 \item{refresh}{}

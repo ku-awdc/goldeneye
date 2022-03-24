@@ -1,5 +1,6 @@
 ---
 title: "goldeneye"
+date: "`r as.character(Sys.Date())`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{goldeneye}
@@ -12,58 +13,107 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+options(goldeneye_redact=TRUE)
+unlink("goldeneye_private.gyp")
+unlink("secret.rdg")
+unlink("secret_for_md.rdg")
+unlink("goldeneye_public.gyu")
+unlink("gy_demo22_test_public.gyu")
 ```
 
-```{r setup}
-library(goldeneye)
+# Sharing secrets safely with goldeneye
+
+The goldeneye package is designed to allow data to safely be shared between R users over potentially insecure channels.  It can also be used to secure data for local storage to ensure that potentially sensitive data can not be accessed by others even if your hard drive is lost or stolen.  The R package is designed to be as simple to use as possible in order to facilitate routine use and also in order to reduce the technical barrier for novice R users.
+
+
+## R package installation 
+
+To get started, you first need to download and install the goldeneye package.  At some point in the future we intend to submit to CRAN, but for now you can install the package from our drat repository using the following code:
+
+```{r eval=FALSE}
+install.packages('goldeneye', repos=c('https://cran.rstudio.com/',
+                                      'https://ku-awdc.github.io/drat/'))
 ```
 
-The goldeneye package is designed to allow data to safely be shared between R users over insecure channels.  While it does require using R, the interfaces are written to be as simple as possible in order to reduce the technical barrier for beginner R users.
+Once the package is installed it then needs to be loaded:
 
-To get started, you first need to download and install the package.  At some point in the future we intend to submit to CRAN, but for now you can use our drat repository as follows:
-
-install.packages("goldeneye", )
-
-Once the package is installed it should be loaded:
-
-library("goldfinger")
+```{r}
+library("goldeneye")
+```
 
 ## Setup
 
-Then you need to set up a personal goldfinger profile.  You need to enter your name, an email address, a username, and a password that will be used to secure your personal goldfinger profile.
+In order to use the package you first need to set up a goldfinger profile.  To do that, run the following function:
 
+```{r eval=FALSE}
 gy_setup()
+```
 
-This creates a .gyu file that contains:
+```{r include=FALSE}
+keyring::key_set_with_value("goldeneye", "test@test.com", "test")
+gy_setup(name = "Test User", email="test@test.com", filename="goldeneye_private.gyp", path=getwd(), append_Rprofile = FALSE)
+```
 
-	- Your name/username/email
-	- An encrypted version of your private key
-	- Your public key
-	- A list of groups you are a member of (see below)
+You will be asked to enter your name, an email address, and a password that will be used to secure your personal goldfinger profile.  The password is stored in the secure registry on your computer, so you do not need to enter it every time you restart R, but you will need to re-enter your password if you change computers - so use a password that you will remember, or better still use a password manager!
 
-This should only be done once for each user.  Remember to keep your .gyu file safe if you lose it then you will have to set up a new file with new keys, that will not be able to decrypt any of your existing encrypted datasets.  If you move to a new computer, then just transfer the .gyu file over.  Also remember your password:  we recommend using a password manager.
+Once setup is complete, a goldfinger profile is created and saved as a .gyp file.  This file contains the following information:
+
+- Your name and email address
+
+- An encrypted version of your private keys
+
+- Your public keys
+
+- A list of groups that you are a member of (see below)
+
+Remember to keep your .gyp file safe! If you lose it then you will have to set up a new file with new keys, and you will not be able to decrypt any of your existing encrypted datasets.  If you move to a new computer, then just copy/transfer the .gyp file over to your new computer.  The .gyp file contains your private keys so should be considered as moderately sensitive i.e. do not place this file online or on shared network drives.  However, even if an attacker was able to get your .gyp file, they would still need to guess your password in order to be able to use it.
 
 ## Sending encrypted files
 
-At this point you can encrypt data and send it to an existing goldeneye user that has made their public key available to you.  They can either do this by sending you their public key file by email, or by hosting it online and sending you the link so that you (and others) can download it whenever you need it.  For example, you can encrypt a file to send to Matt Denwood as follows:
+At this point you are able to encrypt data and send it to an existing goldeneye user that has made their public key available to you.  They can either do this by sending you their public key file by email, or by hosting it online and sending you the link so that you (and others) can download it whenever you need it.  For example, you can encrypt a file to send to Matt Denwood as follows:
 
-secret <- "don't tell anyone"
-gy_save(secret, user="https://www.costmodds.org/people/matt/public_key.gyu", file="secret.rdg")
+```{r}
+secret <- "Some super secret data (this could be a data frame, a list, or any other R object)"
+gy_save(secret, users="https://www.costmodds.org/people/matt/goldeneye_public.gyu",
+        file="secret.rdg")
+```
 
-This creates a file "secret.rdg" in your current working directory that only you and Matt Denwood can decrypt using your private keys, using the following code:
+This creates a file "secret.rdg" in your current working directory that only you and Matt Denwood can decrypt using your respective private keys, using the following code:
 
-gy_load("secret.rdg")
+```{r}
+(gy_load("secret.rdg"))
+secret
+```
 
-Alternatively, the user argument can be a vector of multiple public keys so that other people can also decrypt the same file. If you want to exclude yourself from the list of authorised users then use local_user=FALSE
+Alternatively, the user argument can be a vector of multiple public keys so that other people can also decrypt the same file. If you want to exclude yourself from the list of authorised users then set the local_user=FALSE argument to gy_save().
 
+## Receiving encrypted files
+
+If you want to allow other people to send you encrypted data, then you must first make your public key available.  This can be extracted using the following function:
+
+```{r}
+gy_public_file()
+```
+
+The file produced by this function does not contain your private keys so is safe to either send by email to your collaborators, or place online for general use by anyone.  Other people can then encrypt data for your use by either specifying the path to a local copy of your public file or the URL of the online location.
 
 ## User groups
 
-While you can use the method above, there are some practical weaknesses and potential security vulnerabilities:  (1) the person to whom you want to send data must either send their public key to you or put it online before you can use it, (2) encrypting data for multiple users requires downloading a public key for each user, (3) it is possible for an online key hosted on an insecure website to be changed without your knowledge so that a potential attacker injects their public key that you mistakenly use, and (4) the person receiving the data has no way of verifying that it really was you that encrypted the data i.e. it may be replaced in transit.  For these reasons, we recommend that you use a specific user group for sending files regularly to/from the same people - this solves the issues listed above
+While you can use the method above to share data, there are some practical considerations and potential security vulnerabilities associated:
 
-For most users, this will mean joining an existing group set up by someone else.  As a demonstration, we have created a group for the 2022 SVEPM conference called "demo22" and invite anybody that is interested to join the group to evaluate how the software can be used.  To join the group run the following code:
+1.  The person to whom you want to send data must either send their public key to you or put it online before you can use it.
 
-gy_join_group("[link]")
+1.  Encrypting data for multiple users requires downloading a public key for each user.
+
+1.  It is possible for an online key hosted on an insecure website to be changed without your knowledge so that a potential attacker injects their public key that you mistakenly use
+
+1.  The person receiving the data has no way of verifying that it really was you that encrypted the data i.e. it may be replaced in transit.  
+
+For these reasons, we recommend that you use a specific user group for sending files regularly to/from the same people. For most users, this will mean joining an existing group set up by someone else.  As a demonstration, we have created a group for the 2022 SVEPM conference called "demo22" and invite anybody that is interested to join the group to evaluate how the software can be used.  To join the group run the following code:
+
+```{r}
+gy_join_group("https://www.costmodds.org/rsc/goldeneye/demo22.gyg#oHrjws1utM#md")
+```
 
 This function will do 3 things:
 
@@ -71,33 +121,44 @@ This function will do 3 things:
 
 - Create a file with your public key that you should return to the group administrator (a message will be printed in R instructing you how to do this)
 
-- Modify your .gyu file to include the details of this group for future use.  If you use the same .gyu file on multiple computers then you will need to re-copy it after joining a new group.
+- Modify your .gyp file to include the details of this group for future use.  If you use the same .gyp file on multiple computers then you will need to re-copy it after joining a new group.
 
 At this point you can now see the users that are also in this group:
 
+```{r}
 gy_users()
+```
 
-Your name will not immediately show in the list because the group administrator must first add you to the group at their end.  For the demo22 group this is done semi-automatically, so should happen within 24 hours.
+
+Your name will not immediately show in the list because the group administrator must first add you to the group at their end.  For the demo22 group this is done semi-automatically, so should happen within 24 hours or so.
 
 Once you have joined a group you can then use other peoples' username(s) as a shorthand for their public key:
 
+```{r}
 secret <- "don't tell anyone"
-gy_save(secret, user=c("md","jenright"), file="secret.rdg")
+gy_save(secret, users=c("md"), file="secret_for_md.rdg")
+```
 
-Note that you can do this as soon as you have joined the group, i.e. even before your name shows in the user group list.  However, other people will not be able to verify that it really was you that encrypted the data until the group is updated, so in the meantime they will get a warning that your identity could not be confirmed.
+Note that you can do this as soon as you have joined the group, i.e. even before your name shows in the user group list.  However, other people will not be able to verify that it really was you that encrypted the data until the group is updated, so in the meantime they will get a note that your identity could not be confirmed.
 
-Note that this guide and setup link is freely available online, so in theory anybody can join this group:  please be extremely careful if sending important data that you have selected the correct user name!  We will therefore stop hosting this group at the end of 2022, but any datasets you create will continue to be decryptable indefinitely by the user(s) you have specified, and you may set up and/or join new groups at any point using the same profile that you created above. 
+## Long-term usage
 
+This guide and setup link is freely available online, so in theory anybody can join the demo22 group:  you should therefore be extremely careful to select the correct user name before sending sensitive data!  For security reasons we will stop hosting this demo22 group at the end of 2022, but any datasets you create will continue to be decryptable indefinitely by the user(s) you have specified, and you may set up and/or join new groups at any point using the same profile that you created above. 
 
-## Creating user groups
+If you are interested in setting up your own user group for long-term usage then please feel free to contact the package maintainer.
 
-To set up a new user group, use the following function:
+## Future development
 
-gy_new_group()
+This R package is under active development, so please check back here periodically for updates and new features!  If you are interested in contributing the code base then check out the GitHub repository:
 
-You will have to give a name for the group, as well as an online location where you will store the group information.  The function creates a file that you need to upload to this location, along with a setup link that you need to send to other people that want to be in the group.
+https://github.com/ku-awdc/goldeneye
 
+```{r echo=FALSE}
+options(goldeneye_redact=FALSE)
+unlink("goldeneye_private.gyp")
+unlink("secret.rdg")
+unlink("secret_for_md.rdg")
+unlink("goldeneye_public.gyu")
+unlink("gy_demo22_test_public.gyu")
+```
 
-
-
-## More options

@@ -9,11 +9,10 @@ gy_save(
   ...,
   list = character(),
   file = stop("file must be specified (.rdg file extension is recommended)"),
-  user = character(0),
+  users = character(0),
   local_user = TRUE,
   comment = "",
   overwrite = FALSE,
-  ascii = FALSE,
   funs = list(type = "identity"),
   method = "qs"
 )
@@ -21,6 +20,25 @@ gy_save(
 gy_load(
   file = stop("file must be specified (.rdg file extension is recommended)")
 )
+}
+\arguments{
+\item{...}{one or more R objects to encrypt}
+
+\item{list}{alternative method to provide R objects to encrypt as a character vector}
+
+\item{file}{the name of the encrypted file to create/load (a .rdg file extension is recommended)}
+
+\item{users}{a character vector of (other) users within your current user group for whom the encrypted file will be decryptable. Alternatively, this can be a vector of paths/urls to public keys, or a mixture of the two.}
+
+\item{local_user}{should the current user also be able to decrypt thw file?}
+
+\item{comment}{an optional comment that will be sent (unencrypted) along with the}
+
+\item{overwrite}{if a file with the same name already exists, should it be overwritten?}
+
+\item{funs}{optional additional encryption steps: this must be the output of a call to \code{\link{gy_key_funs}}}
+
+\item{method}{the serialisation method to use (currently either 'qs' or 'base')}
 }
 \description{
 Save and load encrypted files

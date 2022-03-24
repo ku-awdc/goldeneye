@@ -9,7 +9,7 @@
 gy_saveRDS(
   object,
   file = stop("file must be specified (.rdg file extension is recommended)"),
-  user = character(0),
+  users = character(0),
   local_user = TRUE,
   comment = "",
   overwrite = FALSE,

@@ -1,8 +1,23 @@
 upgrade_user <- function(local, path){
 
+  if(numeric_version(local[["versions"]][["actual"]]) < "0.4.1"){
+
+    stop("Please update the goldfinger package and then run the function goldfinger::gy_check() before proceeding", call.=FALSE)
+
+  }
+
   if(numeric_version(local[["versions"]][["actual"]]) < "0.5.0"){
 
-    stop("Please run the function goldfinger::upgrade_to_goldeneye() before proceeding", call.=FALSE)
+    ## Upgrade from goldfinger:
+    stopifnot("user" %in% names(local), "goldfinger" %in% local$groups)
+    local$groups$goldfinger$user <- local$user
+    local$setup_date <- as.Date(local$versions["date_time"])
+    names(local$setup_date) <- NULL
+
+    # NB: don't remove the local$user until goldfinger is fully migrated
+    # local$user <- NULL
+    # Once this is activated also re-order the names as so:
+    epn <- c("name", "email", "setup_date", "versions", "public_curve", "public_ed", "salt", "encr_curve", "encr_ed", "groups")
 
   }
 
