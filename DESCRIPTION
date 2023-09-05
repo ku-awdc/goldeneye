@@ -1,7 +1,7 @@
 Package: goldeneye
 Title: Sharing Secrets Safely
-Date: 2022-03-24
-Version: 0.5.1-1
+Date: 2023-09-05
+Version: 0.6.0-1
 Authors@R: 
     c(
     person(given = "Matt",
@@ -36,14 +36,16 @@ Authors@R:
 Description: The goldeneye package is designed to allow data to safely be shared
   between R users over insecure channels.  While it does require using R, the 
   interfaces are written to be as simple as possible in order to reduce the 
-  technical barrier for beginner R users.  This package was developed as part
-  of the NordForsk-funded DigiVet project.
+  technical barrier for beginner R users.  A shiny interface is also provided to
+  further simplify usage.  This package was developed as part of the
+  NordForsk-funded DigiVet project.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Imports:
     rstudioapi,
+    zip,
     base64enc,
     keyring,
     getPass,
@@ -53,7 +55,7 @@ Imports:
     cyphr,
     stringr
 Depends:
-    R (>= 3.5.0),
+    R (>= 4.1.0),
     tidyverse
 Suggests: 
     knitr,
