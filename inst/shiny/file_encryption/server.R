@@ -1,19 +1,87 @@
+## Statuses are:
+## 0: nothing
+## 1: type selected - validate password
+## 2: create profile
+## 3: profile created - download ready
+## 4: setup verified (and profile downloaded)
 
-
-
-tempdir <- tempfile(pattern = "fecrt_analysis", tmpdir = tempdir(check=TRUE))
-dir.create(tempdir)
-setwd(tempdir)
 
 function(input, output, session) {
+
+  tempdir <- tempfile(pattern = "goldeneye", tmpdir = tempdir(check=TRUE))
+  dir.create(tempdir)
 
   rv <- reactiveValues(
     profile_file = getOption('goldeneye_path'),
     status = if_else(profile_selected=="default", 1L, 0L),
-    password_feedback = password_text
+    password_feedback = password_text,
+    current_profile = "",
+    profile_file_feedback = "Please select your private goldeneye key file",
+    files_ready = 0,
+    user_keys = list(),
+    process_feedback = "",
+    user_feedback = "Encrypting for self decrypt only",
+    user_list = list(),
+    user_length = -1,
+    decrypt_feedback = "No file selected",
+    decrypt_ready = 0,
+    decrypt_filename = "",
+    user_info = list()
   )
-  output$status <- renderText(rv$status)
-  outputOptions(output, 'status', suspendWhenHidden=FALSE)
+
+  add_user <- function(name, email){
+
+    if(name!="" && email!=""){
+      rv$user_list <- c(rv$user_list, list(c(name, email)))
+    }
+
+    if(input$user_self){
+      rv$user_feedback <- str_c("The specified file(s) will be decrypted for self decryption (by ", rv$user_info$email, ") ")
+    }else{
+      rv$user_feedback <- str_c("The specified file(s) will be decrypted for self decryption (by ", rv$user_info$email, ") ")
+    }
+    if(length(rv$user_list)==0L){
+      rv$user_feedback <- str_c(rv$user_feedback, " only<br>")
+    }else{
+      rv$user_feedback <- str_c(rv$user_feedback, " and the following users:<br>")
+      for(i in seq_along(rv$user_list)){
+        rv$user_feedback <- str_c(rv$user_feedback, "<br>", rv$user_list[[i]][1], " : ", rv$user_list[[i]][2])
+      }
+    }
+  }
+
+  observe({
+    input$profile_file
+
+    if(!is.null(input$profile_file)){
+
+      path <- input$profile_file$datapath[1]
+      prf <- readRDS(path)
+      if(!all(c("name","email","salt","encr_curve") %in% names(prf))){
+        rv$profile_file_feedback <- "ERROR: invalid goldeneye key file"
+      }else{
+        ss <- try({
+          gy_profile(path)
+        })
+        if(inherits(ss,"try-error")){
+          rv$profile_file_feedback <- "ERROR: there was a problem reading the goldeneye key file"
+        }else{
+          rv$profile_file_feedback <- "Private key file read successfully"
+          rv$status <- 1L
+          rv$profile_file <- path
+
+          keys <- keyring::key_list("goldeneye")
+          if(prf$email %in% keys$username){
+            default_password <- key_get("goldeneye", prf$email)
+            updateTextInput(session, "password_hide", value=default_password)
+            updateTextInput(session, "password_show", value=default_password)
+            rv$password_feedback <- "Password retrieved from keyring"
+          }
+        }
+      }
+    }
+  })
+  output$profile_file_feedback <- renderText(rv$profile_file_feedback)
 
   observe({
     input$password_show
@@ -26,22 +94,47 @@ function(input, output, session) {
   })
 
   observe({
+    input$password_verify_show
+    updateTextInput(session, "password_verify_hide", value=input$password_verify_show)
+  })
+
+  observe({
+    input$password_verify_hide
+    updateTextInput(session, "password_verify_show", value=input$password_verify_hide)
+  })
+
+  observe({
+    input$password_new_show
+    updateTextInput(session, "password_new_hide", value=input$password_new_show)
+  })
+
+  observe({
+    input$password_new_hide
+    updateTextInput(session, "password_new_show", value=input$password_new_hide)
+  })
+
+  observe({
     input$profile
-    rv$status <- if_else(input$profile=="default", 1L, 0L)
+
+    if(!is.null(input$profile) && (rv$current_profile != input$profile)){
+      rv$current_profile <- input$profile
+      rv$status <- case_when(
+        input$profile=="default" ~ 1L,
+        input$profile=="new" ~ 2L,
+        TRUE ~ 0L
+      )
+    }
+    print(rv$status)
+
   })
 
   output$password_feedback <- renderText(str_c("<br>",rv$password_feedback))
 
   observeEvent(input$check_password, {
 
-    rv$status <- if_else(input$profile=="default", 1L, 0L)
     if(!file.exists(rv$profile_file)){
       rv$password_feedback <- str_c("Error: profile file not found!")
     }else{
-      if(input$profile=="select"){
-        ## Save new profile location:
-        rv$profile_file <- input$profile_file
-      }
       ## Check validity of profile:
       ss <- try({
         prf <- readRDS(rv$profile_file)
@@ -59,411 +152,198 @@ function(input, output, session) {
           rv$password_feedback <- str_c("Error: password invalid!")
         }else{
           rv$password_feedback <- str_c("Password validated!")
-          rv$status <- 2L
+          rv$status <- 4L
           if(input$password_hide!=keyring::key_get("goldeneye",prf$email)){
             keyring::key_set_with_value("goldeneye", prf$email, input$password_hide)
           }
+          rv$user_info <- gy_profile(rv$profile_file)
         }
       }
     }
 
   })
 
-  if(FALSE){
-    fecrt_analysis <- FecrtAnalysis$new(shiny = TRUE)
+  observeEvent(input$create_profile, {
 
+    rv$status <- 2L
 
-    rv <- reactiveValues(
-    data_paired = data.frame(PreTreatment=integer(0),PostTreatment=integer(0)),
-    data_txt = data.frame(),
-    data_ctl = data.frame(),
-    data_demo = data.frame(),
-    status = 0L,
-    status_feedback = status_feedback[1],
-    result_summary = "",
-    filename = ""
-  )
-  ## Note: statuses are:
-  ## 0: nothing
-  ## 1: N input (direct input only)
-  ## 2: data input or uploaded
-  ## 3: parameters selected and verified (multiplication factor != 0 etc)
-  ## 4: summary results run
-  ## 5: full results and markdown files generated
+    if(input$setup_name==""){
+      rv$setup_feedback <- "ERROR: please enter your name"
+    }else if(input$setup_email=="" || !grepl("@", input$setup_email)){
+      rv$setup_feedback <- "ERROR: please enter a valid email address"
+    }else if(input$password_new_hide!=input$password_verify_hide){
+      rv$setup_feedback <- "ERROR: passwords don't match!"
+    }else{
+      if(input$password_new_hide!=input$password_new_show){
+        stop("Hidden and shown passwords (new) not equal!")
+      }
+      if(input$password_verify_hide!=input$password_verify_show){
+        stop("Hidden and shown passwords (verify) not equal!")
+      }
+      ss <- try({
+        keyring::key_set_with_value("goldeneye", input$setup_email, input$password_new_hide)
 
-  settings <- reactiveValues(
-    entryType = "upload",
-    design = "paired",
-    directN_paired = 20,
-    directN_txt = 20,
-    directN_ctl = 20
-  )
-
-  observe({
-    req(input$entryType)
-
-    if(input$entryType == "demo"){
-      updateSelectInput(session, "design", selected="paired")
-      updateNumericInput(session, "directN_paired", value=20L)
-
-      settings$entryType <- "demo"
-      settings$design <- "paired"
-      settings$directN_paired <- 20L
-      settings$directN_ctl <- input$directN_ctl
-      settings$directN_txt <- input$directN_txt
-
-      rv$data_demo <- data.frame(
-        PreTreatment = as.integer(rnbinom(20, 1, mu=20)*50),
-        PostTreatment = as.integer(rnbinom(20, 1, mu=1)*50)
-      )
-
-      waavp_choices_demo <- waavp_choices
-      waavp_choices_demo$`*SELECT*` <- NULL
-      waavp_choices_demo$Swine <- NULL
-      waavp_choices_demo$Equine <- waavp_choices_demo$Equine[1:3]
-
-      updateCheckboxInput(session, "parameterType", value="research")
-      updateSelectInput(session, "waavpSetup", selected=sample(unlist(waavp_choices_demo),1))
-      updateNumericInput(session, "mf_pre", value=50)
-      updateCheckboxInput(session, "mfp_fixed", value=TRUE)
-      updateTextInput(session, "region", value=sample(
-        c("Westeros","Narnia","Discworld","Middle-earth","Aiur","Azeroth"), 1
-      ))
-      updateTextInput(session, "identifier", value="Demonstration")
-
-      rv$status <- 3
+        gy_setup(name=input$setup_name, email=input$setup_email, filename="goldeneye_private.gyp", path=tempdir, append_Rprofile=FALSE, silent=TRUE)
+      })
+      if(inherits(ss, "try-error")){
+        rv$setup_feedback <- "ERROR: an unknown error occured"
+      }else{
+        rv$setup_feedback <- "Profile created successfully"
+        rv$status <- 3L
+        print(rv$status)
+        rv$user_info <- gy_profile(file.path(tempdir, "goldeneye_private.gyp"))
+      }
     }
   })
+  output$setup_feedback <- renderText(str_c("<br>", rv$setup_feedback))
 
-  data_file <- reactive({
-    req(input$dataFile)
-
-    fecrt_analysis$reset()
-    msg <- fecrt_analysis$add_data_files(input$dataFile[,"datapath"], names=input$dataFile[,"name"])
-
-    if(fecrt_analysis$n_data==0L){
-      rv$status <- 0
-      rv$status_feedback <- status_feedback[1]
-      validate(str_c(c("No valid datasets found - please correct the following errors and try again:", str_c("\t", msg)), collapse="\n"))
-    }
-
-    msg <- str_c(c(str_c("A total of ", fecrt_analysis$n_data, " datasets were uploaded successfully with the following notes:"), str_c("\t", msg)), collapse="<br>")
-
-    updateSelectInput(session, "design", selected = fecrt_analysis$design)
-    settings$design <- fecrt_analysis$design
-
-    ## Note: this is needed as otherwise switching back to direct breaks design:
-    updateRadioButtons(session, "entryType", choices = c(`File upload` = "file"))
-
-    rv$status <- 2
-    rv$status_feedback <- status_feedback[2]
-
-    msg
-  })
-
-  output$upload_feedback <- renderText({
-    data_file()
-  })
-
-  observe({
-    input$design
-    rv$design <- input$design
-    settings$design <- input$design
-    rv$status <- 0L
-  })
-
-  ## Initialise data to go from status 0 to 1:
-  observeEvent(input$initialise_data, {
-
-    settings$design <- input$design
-    settings$directN_paired <- input$directN_paired
-    settings$directN_ctl <- input$directN_ctl
-    settings$directN_txt <- input$directN_txt
-    settings$entryType <- input$entryType
-
-    rv$data_paired <- data.frame(
-      `PreTreatment` = repnull(input$directN_paired),
-      `PostTreatment` = repnull(input$directN_paired)
-    )
-    rv$data_ctl <- data.frame(
-      `Control` = repnull(input$directN_ctl)
-    )
-    rv$data_txt <- data.frame(
-      `Treatment` = repnull(input$directN_txt)
-    )
-    rv$status <- 1L
-  })
-
-  ## Input data to go from status 1 to 2 (upload done elsewhere):
-  observe({
-    rv$status
-    input$data_paired
-    input$data_demo
-    input$data_ctl
-    input$data_txt
-
-    if(rv$status >= 1 && settings$entryType %in% c("direct","demo")){
-      if(settings$design == "paired"){
-        if(settings$entryType=="direct"){
-          data_paired <- hot_to_r(input$data_paired)
-        }else{
-          data_paired <- hot_to_r(input$data_demo)
-        }
-        rv$status <- ifelse(
-          !is.null(data_paired) &&
-            sum(!is.na(data_paired[[1]])) > 0L &&
-            sum(!is.na(data_paired[[2]])) > 0L,
-          max(rv$status, 2), 1)
-      }else if(settings$design == "unpaired"){
-        stopifnot(settings$entryType=="direct")
-        data_ctl <- hot_to_r(input$data_ctl)
-        data_txt <- hot_to_r(input$data_txt)
-        rv$status <- ifelse(
-          !is.null(data_ctl) &&
-            !is.null(data_txt) &&
-            sum(!is.na(data_ctl)) > 0L &&
-            sum(!is.na(data_txt)) > 0L,
-          max(rv$status, 2), 1)
-      }else{
-        stop("Unrecognised settings$design")
-      }
-      if(rv$status==2){
-        rv$status_feedback <- status_feedback[2]
-      }else{
-        rv$status_feedback <- status_feedback[1]
-      }
-    }
-    ## Note: file input checking is done elsewhere!
-
-    print(rv$status)
-  })
-
-  ## Input parameters to go from status 2 to 3:
-  observe({
-    rv$status
-    input$parameterType
-    input$waavpSetup
-    input$mf_pre
-    input$mf_post
-    input$mfp_fixed
-    input$mf_txt
-    input$mf_ctl
-    input$mfu_fixed
-
-    if(rv$status >= 2){
-      if(input$design=="paired"){
-        if(is.na(input$mf_pre) || (!input$mfp_fixed && is.na(input$mf_post)) || input$waavpSetup=="INVALID"){
-          rv$status <- 2
-        }else{
-          rv$status <- max(rv$status, 3)
-        }
-      }else if(input$design=="unpaired"){
-        if(is.na(input$mf_ctl) || (!input$mfu_fixed && is.na(input$mf_txt)) || input$waavpSetup=="INVALID"){
-          rv$status <- 2
-        }else{
-          rv$status <- max(rv$status, 3)
-        }
-      }else{
-        stop("Unrecognised design")
-      }
-    }
-
-    print(rv$status)
-  })
-
-
-  ## Settings that reset status to 0:
-  observe({
-    if(changed(c("entryType","design","directN_paired","directN_ctl","directN_txt"),input,settings)){
-      ## If moving away from demo then reset everything:
-      if(settings$entryType=="demo"){
-        updateSelectInput(session, "design", selected="paired")
-        updateNumericInput(session, "directN_paired", value=20L)
-        updateSelectInput(session, "parameterType", selected="waavp")
-        updateSelectInput(session, "waavpSetup", selected=unlist(waavp_choices)[1])
-        updateNumericInput(session, "mf_pre", value=NULL)
-        updateCheckboxInput(session, "mfp_fixed", value=TRUE)
-        updateTextInput(session, "region", value="")
-        updateTextInput(session, "identifier", value="")
-        settings$entryType <- input$entryType
-        fecrt_analysis$reset()
-      }
-
-      rv$status <- 0L
-    }
-  })
-
-
-  observe({
-    output$data_paired <- renderRHandsontable({
-      rhandsontable(rv$data_paired, rowHeaders=NULL, stretchH = "none")
-    })
-    output$data_demo <- renderRHandsontable({
-      rhandsontable(rv$data_demo, rowHeaders=NULL, stretchH = "none")
-    })
-    output$data_txt <- renderRHandsontable({
-      rhandsontable(rv$data_txt, rowHeaders=NULL, stretchH = "none")
-    })
-    output$data_ctl <- renderRHandsontable({
-      rhandsontable(rv$data_ctl, rowHeaders=NULL, stretchH = "none")
-    })
-  })
-
-  observe({
-
-    parasite_choices <-
-      if(input$hostSpecies == "INVALID"){
-        "*SELECT HOST FIRST*"
-      }else if(input$hostSpecies %in% c("cattle","sheep","goats")){
-        c("*SELECT*", "nematodes", "other")
-      }else if(input$hostSpecies %in% c("horse_adult","donk_adult")){
-        c("*SELECT*", "strongyles", "other")
-      }else{
-        "ERROR - MISSING HOST"
-      }
-
-    anthelmintic_choices <-
-      if(input$hostSpecies == "INVALID"){
-        "*SELECT HOST FIRST*"
-      }else if(input$hostSpecies %in% c("cattle","sheep","goats")){
-        c("*SELECT*", "Benzimidazoles", "Other")
-      }else if(input$hostSpecies %in% c("horse_adult","donk_adult")){
-        c("*SELECT*", "Pyrantel", "Other")
-      }else{
-        "ERROR - MISSING HOST"
-      }
-
-    updateSelectInput(session,
-      "parasiteSpecies",
-      choices = parasite_choices,
-      selected = ifelse(is.null(input$parasiteSpecies) || !input$parasiteSpecies %in% parasite_choices, parasite_choices[1], input$parasiteSpecies)
-    )
-
-    updateSelectInput(session,
-      "anthelmintic",
-      choices = anthelmintic_choices,
-      selected = ifelse(is.null(input$anthelmintic) || !input$anthelmintic %in% anthelmintic_choices, anthelmintic_choices[1], input$anthelmintic)
-    )
-
-  })
-
-  #output$host <- "other"
-  output$footer <- renderText("<h4>Hello</h4>")
-  #print(input$hostSpecies)
-  #print(input)
-
-  output$downloadReport <- downloadHandler(
-    filename = function() {
-      ext <- if(input$downloadType=="pdf"){
-        ".pdf"
-      }else if(input$downloadType=="word"){
-        ".docx"
-      }else{
-        stop("Unrecognised download type")
-      }
-      str_c(rv$filename, ext)
-    },
+  output$save_profile <- downloadHandler(
+    filename = function() "goldeneye_private.gyp",
     content = function(file) {
-      ext <- if(input$downloadType=="pdf"){
-        ".pdf"
-      }else if(input$downloadType=="word"){
-        ".docx"
-      }else{
-        stop("Unrecognised download type")
-      }
-      fn <- str_c(rv$filename, ext)
-      success <- file.copy(file.path(tempdir, fn),file)
-      if(!success) stop("Error copying report")
+      success <- file.copy(file.path(tempdir, "goldeneye_private.gyp"), file)
+      if(!success) stop("Error copying private key file")
+      rv$status <- 4L
     }
   )
 
-  observeEvent(input$calculate, {
-    withProgress(message = "Calculating...", value= 0, {
+  output$download_public <- downloadHandler(
+    filename = function() "goldeneye_public.gyu",
+    content = function(file) {
+      gy_public_file(file.path(tempdir, "goldeneye_public.gyu"))
+      success <- file.copy(file.path(tempdir, "goldeneye_public.gyu"), file)
+      if(!success) stop("Error copying public key file")
+    }
+  )
 
-      ## If direct/demo then add data:
-      if(settings$entryType=="direct"){
-        if(settings$design=="paired"){
-          fecrt_analysis$import_data(hot_to_r(input$data_paired),"direct entry")
-        }else{
-          ctls <- hot_to_r(input$data_ctl)[[1]]
-          txts <- hot_to_r(input$data_txt)[[1]]
-          gps <- c(rep("Control",times=length(ctls)), rep("Treatment",times=length(txts)))
-          epgs <- c(ctls,txts)
-          stopifnot(length(gps)==length(epgs))
-          fecrt_analysis$import_data(
-            data.frame(Group=gps, EPG=epgs),
-            "direct entry"
-          )
-        }
-      }else if(settings$entryType=="demo"){
-        fecrt_analysis$import_data(hot_to_r(input$data_demo),"demo")
+  observe({
+    input$encrypt_files
+
+    if(is.null(input$encrypt_files)){
+      rv$files_ready <- -1
+    }else{
+      rv$files_ready <- nrow(input$encrypt_files)
+
+      ## Hack to re-print the rv stuff:
+      if(length(rv$user_list) != rv$user_length){
+        add_user("","")
+        rv$user_length <- length(rv$user_list)
       }
-
-      ## Then add parameters:
-      if(input$design=="paired"){
-        mf1 <- input$mf_pre
-        if(input$mfp_fixed){
-          mf2 <- mf1
-        }else{
-          mf1 <- input$mf_post
-        }
-      }else if(input$design=="unpaired"){
-        mf1 <- input$mf_ctl
-        if(input$mfu_fixed){
-          mf2 <- mf1
-        }else{
-          mf1 <- input$mf_txt
-        }
-      }else{
-        stop("Unrecognised design option")
-      }
-
-      if(input$parameterType%in%c("clinical","research")){
-        fecrt_analysis$set_parameters_guidelines(
-          input$waavpSetup,
-          input$parameterType,
-          mf1,
-          mf2,
-          input$region,
-          input$identifier
-        )
-      }else{
-        validate("parameterType custom not implemented")
-      }
-
-      output <- fecrt_analysis$run_analysis_shiny()
-      setProgress(1/4)
-
-      fn <- str_c("fecrt_report_", format(Sys.time(), format="%Y%m%d%H%M%S"))
-      rv$filename <- fn
-
-      cat(output$markdown, file=str_c(fn, ".md"))
-      Sys.sleep(0.1)
-      setProgress(2/4)
-
-      ## Render PDF:
-      rmarkdown::render(str_c(fn, ".md"), output_format=rmarkdown::pdf_document())
-      Sys.sleep(0.1)
-      setProgress(3/4)
-
-      ## Render Word:
-      rmarkdown::render(str_c(fn, ".md"), output_format=rmarkdown::word_document())
-      Sys.sleep(0.1)
-      setProgress(4/4)
-    })
-
-    rv$result_summary <- output$headline
-    rv$status <- 4
+    }
   })
 
-  output$status <- renderText(rv$status)
-  outputOptions(output, 'status', suspendWhenHidden=FALSE)
+  observeEvent(input$process_online, {
+
+    tmpfl <- tempfile(pattern="user", tmpdir=tempdir)
+    ss <- try({
+      download.file(input$user_online, tmpfl, quiet=TRUE, mode="wb")
+    })
+    if(inherits(ss,"try-error")){
+      rv$process_feedback <- "ERROR:  problem downloading from the specified link"
+    }else{
+      ss <- try({
+        info <- unserialize(readRDS(tmpfl))
+      })
+      if(inherits(ss,"try-error") || !all(c("email","name","public_curve")%in%names(info))){
+        rv$process_feedback <- "ERROR:  problem reading the specified key file"
+      }else{
+        newkey <- list(info$public_curve)
+        names(newkey) <- info$email
+        rv$user_keys <- c(rv$user_keys, newkey)
+        updateTextInput(session, "user_online", value="")
+
+        add_user(info$name, info$email)
+      }
+    }
+    unlink(tmpfl)
+  })
+
+  observeEvent(input$process_local, {
+
+    ss <- try({
+      info <- unserialize(readRDS(input$user_local$datapath))
+    })
+    if(inherits(ss,"try-error") || !all(c("email","name","public_curve")%in%names(info))){
+      rv$process_feedback <- "ERROR:  problem reading the specified key file"
+    }else{
+      newkey <- list(info$public_curve)
+      names(newkey) <- info$email
+      rv$user_keys <- c(rv$user_keys, newkey)
+      add_user(info$name, info$email)
+      updateTextInput(session, "user_online", value="")
+    }
+
+  })
+
+  output$encrypt_download <- downloadHandler(
+    filename = function() "encrypted_files.rfg",
+    content = function(file) {
+      cwd <- getwd()
+      on.exit(setwd(cwd))
+      setwd(tempdir)
+
+      ## First create files with correct names:
+      file.copy(input$encrypt_files$datapath, input$encrypt_files$name, overwrite = TRUE)
+      gy_zip(input$encrypt_files$name, file="encrypted_files.rfg", users=rv$user_keys, local_user=input$user_self)
+      unlink(input$encrypt_files$name)
+      success <- file.copy("encrypted_files.rfg", file)
+      if(!success) stop("Error copying private key file")
+    }
+  )
+
+  observe({
+    input$decrypt_file
+
+    if(is.null(input$decrypt_file)){
+      rv$decrypt_ready <- 0
+    }else{
+      ss <- try({
+        prf <- readRDS(input$decrypt_file$datapath)
+      })
+      if(inherits(ss,"try-error") || !inherits(prf, "goldeneye") || prf$metadata$gy_type != "gy_zip"){
+        rv$decrypt_feedback <- "ERROR:  specified file is not valid"
+      }else{
+
+        ## Then extract the files:
+        cwd <- getwd()
+        on.exit(setwd(cwd))
+        setwd(tempdir)
+        ss <- try({
+          ff <- gy_unzip(input$decrypt_file$datapath, unzip=NULL, overwrite=TRUE, run_custom = TRUE)
+        })
+        if(inherits(ss,"try-error")){
+          rv$decrypt_feedback <- "ERROR:  unable to decrypt specified file"
+          validate("ERROR:  unable to decrypt specified file")
+        }
+        if(is.data.frame(ff)) ff <- ff$File
+
+        rv$decrypt_filename <- ff
+        rv$decrypt_ready <- 1
+        rv$decrypt_feedback <- "File(s) decrypted and ready to save"
+      }
+    }
+  })
+
+  output$decrypt_download <- downloadHandler(
+    filename = function() rv$decrypt_filename,
+    content = function(file) {
+      stopifnot(file.exists(file.path(tempdir, rv$decrypt_filename)))
+      success <- file.copy(file.path(tempdir, rv$decrypt_filename), file)
+      if(!success) stop("Error copying decrypted file")
+    }
+  )
+
+  output$process_feedback <- renderText(rv$process_feedback)
+  output$user_feedback <- renderText(rv$user_feedback)
+  output$decrypt_feedback <- renderText(rv$decrypt_feedback)
+  output$decrypt_ready <- renderText(rv$decrypt_ready)
 
   fluidPage({
-    output$status_feedback <- renderText(rv$status_feedback)
-    output$result_summary <- renderText(rv$result_summary)
+    output$files_ready <- renderText(rv$files_ready)
+    output$status <- renderText(rv$status)
   })
-  }
+  outputOptions(output, 'status', suspendWhenHidden=FALSE)
+  outputOptions(output, 'files_ready', suspendWhenHidden=FALSE)
+  outputOptions(output, 'decrypt_ready', suspendWhenHidden=FALSE)
 
 }
 

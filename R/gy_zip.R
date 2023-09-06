@@ -37,7 +37,7 @@ gy_zip <- function(input_files, file=stop("file must be specified (.rfg file ext
 
 #' @rdname gy_zip
 #' @export
-gy_unzip <- function(file=stop("file must be specified (.rfg file extension is recommended)"), directory=getwd(), overwrite=FALSE, run_custom=TRUE){
+gy_unzip <- function(file=stop("file must be specified (.rfg file extension is recommended)"), directory=getwd(), unzip=TRUE, overwrite=FALSE, run_custom=TRUE){
 
   stopifnot(file.exists(file))
 
@@ -50,20 +50,36 @@ gy_unzip <- function(file=stop("file must be specified (.rfg file extension is r
 
   ## De-encode and save to file:
   tmpfl <- tempdir(check=TRUE)
-  writeBin(base64decode(object), file.path(tmpfl, "gyarchive.zip"))
+  writeBin(base64decode(object), file.path(tmpfl, "archive.zip"))
 
-  ## Find non-existing files:
-  file_list <- zip_list(file.path(tmpfl, "gyarchive.zip"))$filename
-  if(!overwrite){
-    to_extract <- !file.exists(file.path(directory, file_list))
-    if(all(!to_extract)) stop("No files were extracted as all files exist already - set overwrite=TRUE to overwrite files")
-    if(any(!to_extract)) warning("One or more files were not extracted as the file(s) already exist - set overwrite=TRUE to overwrite files")
-  }else{
-    if(any(file.exists(file.path(directory, file_list)))) cat("Note: one or more files were over-written")
+  file_list <- zip_list(file.path(tmpfl, "archive.zip"))$filename
+  ## NULL unzip means if only 1 file
+  if(is.null(unzip)){
+    unzip <- length(file_list)==1L
   }
-  unzip(file.path(tmpfl, "gyarchive.zip"), files=file_list[to_extract], overwrite=overwrite, junkpaths=FALSE, exdir=directory)
-  file.remove(file.path(tmpfl, "gyarchive.zip"))
 
-  invisible(data.frame(File=file.path(directory, file_list), Extracted=to_extract))
+  if(unzip){
+    ## Find non-existing files:
+    to_extract <- !file.exists(file.path(directory, file_list))
+    if(!overwrite){
+      if(all(!to_extract)) stop("No files were extracted as all files exist already - set overwrite=TRUE to overwrite files")
+      if(any(!to_extract)) warning("One or more files were not extracted as the file(s) already exist - set overwrite=TRUE to overwrite files")
+    }else{
+      if(any(file.exists(file.path(directory, file_list)))) cat("Note: one or more files were over-written")
+    }
+    unzip(file.path(tmpfl, "archive.zip"), files=file_list[to_extract], overwrite=overwrite, junkpaths=FALSE, exdir=directory)
+    file.remove(file.path(tmpfl, "archive.zip"))
+
+    invisible(data.frame(File=file_list, Extracted=to_extract))
+
+  }else{
+
+    file.copy(file.path(tmpfl, "archive.zip"), file.path(directory, "archive.zip"))
+    file.remove(file.path(tmpfl, "archive.zip"))
+
+    invisible("archive.zip")
+
+  }
+
 
 }

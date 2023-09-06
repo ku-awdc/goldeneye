@@ -9,7 +9,7 @@
 #' @export
 gy_setup <- function(name=NULL, email=NULL, filename=NULL, path=NULL, append_Rprofile=NULL, silent=FALSE){
 
-  cat("#### Setup goldeneye profile ####\n")
+  if(!silent) cat("#### Setup goldeneye profile ####\n")
 
   ## First ask for name and email:
   if(is.null(name)) name <- readline(prompt="Name:  ")
@@ -94,7 +94,7 @@ gy_setup <- function(name=NULL, email=NULL, filename=NULL, path=NULL, append_Rpr
 
   ## Add the path to the storage file to the user's Rprofile:
 
-  if(!isFALSE(append_Rprofile)){
+  if(!base::isFALSE(append_Rprofile)){
     rprofline <- str_c("options(goldeneye_path='", file.path(path, filename), "')\n")
     eval(parse(text=rprofline))
     if(!isTRUE(append_Rprofile)){

@@ -26,25 +26,42 @@ gy_encrypt <- function(object, users=character(0), local_user=TRUE, comment = ""
 
   localuser <- get_localuser()
 
-  ## Shortcut for all users in the current group:
-  if("all" %in% user){
-    user <- unique(c(user, names(keys)))
-    user <- user[!user %in% c("all","local_user")]
+  ## TEMPORARY HACK
+  if(is.list(user)){
+    ## Users can be specified as a named list of keys (names are emails)
+
+    if(local_user){
+      lu <- list(key = localuser$public_curve)
+      names(lu) <- localuser$email
+      user <- c(user, lu)
+    }
+
+    keys <- user
+    user <- names(keys)
+
+  }else{
+    ## Shortcut for all users in the current group:
+    if("all" %in% user){
+      user <- unique(c(user, names(keys)))
+      user <- user[!user %in% c("all","local_user")]
+    }
+    if("local_user" %in% user) stop("Invalid user 'local_user' - please use your true username", call.=FALSE)
+
+    if(local_user){
+      ## Remove duplicate user if there to avoid confusion:
+      user <- user[!user %in% localuser]
+      user <- c(user, "local_user")
+    }
+
+    ## Ensure we have at least one user:
+    if(length(user)==0L) stop("No decrypt users specified!")
+
+    ## Get public keys for all specified users:
+    keys <- get_public_keys(user, type="curve")
+    user <- names(keys)
+
   }
-  if("local_user" %in% user) stop("Invalid user 'local_user' - please use your true username", call.=FALSE)
 
-  if(local_user){
-    ## Remove duplicate user if there to avoid confusion:
-    user <- user[!user %in% localuser]
-    user <- c(user, "local_user")
-  }
-
-  ## Ensure we have at least one user:
-  if(length(user)==0L) stop("No decrypt users specified!")
-
-  ## Get public keys for all specified users:
-  keys <- get_public_keys(user, type="curve")
-  user <- names(keys)
 
   ## Get private and public keys for this user:
   private_key <- get_gykey(localuser$email, localuser$salt, localuser$encr_curve)
@@ -147,14 +164,14 @@ gy_decrypt <- function(object, run_custom = TRUE){
   }
   crypt <- object$decrypt[[hashify(localuser$email)]]
 
-  key <- find_key(localuser$email, type="curve")
+  key <- find_key(object$metadata$creator, type="curve")
   if(length(key)>0L){
     if(!identical(object$metadata$public_curve, key)){
       stop("The data has been tampered with", call.=FALSE)
     }
   }else{
     if(object$metadata$creator != hashify(localuser$email)){
-      message("The user that sent this file is not registered with any of your groups: it is therefore not possible to verify that the data has not been tampered with", call.=FALSE)
+      message("The user that sent this file is not registered with any of your groups: it is therefore not possible to verify that the data has not been tampered with")
     }
   }
 

@@ -33,7 +33,7 @@ gy_profile <- function(path = getOption('goldeneye_path'), silent=FALSE){
 
 #' @rdname gy_profile
 #' @export
-gy_info <- function(){
+gy_info <- function(silent=FALSE){
 
   redact <- getOption('goldeneye_redact')
   if(is.null(redact)) redact <- FALSE
@@ -41,22 +41,22 @@ gy_info <- function(){
 
   local <- gy_check(silent=TRUE)
 
-  cat("User profile for '", local$name, "':\n", sep="")
+  if(!silent) cat("User profile for '", local$name, "':\n", sep="")
   if(redact){
-    cat("Email: '**@**.**'\n", sep="")
+    if(!silent) cat("Email: '**@**.**'\n", sep="")
   }else{
-    cat("Email: '", local$email, "'\n", sep="")
+    if(!silent) cat("Email: '", local$email, "'\n", sep="")
   }
   stopifnot(length(local$groups)>=1L)
   if(length(local$groups)==1L){
-    cat("You are not a member of any user groups\n", sep="")
+    if(!silent) cat("You are not a member of any user groups\n", sep="")
   }else if(length(local$groups)==2L){
-    cat("Member of '", names(local$groups)[2], "' group with the following users:\n", sep="")
+    if(!silent) cat("Member of '", names(local$groups)[2], "' group with the following users:\n", sep="")
     ss <- try({
     users <- get_users(all_users=TRUE, group=names(local$groups)[2], refresh=FALSE, silent=TRUE)
     })
     if(inherits(ss, "try-error")){
-      cat("\t[Unable to download user list]\n", sep="")
+      if(!silent) cat("\t[Unable to download user list]\n", sep="")
     }else{
       usrs <- t(vapply(users, function(x){
         c(unlist(x[c("user","name","email")]), member_since=as.character(x$member_since))
@@ -69,7 +69,7 @@ gy_info <- function(){
     }
 
   }else{
-    cat("Member of the following member groups:\n", sep="")
+    if(!silent) cat("Member of the following member groups:\n", sep="")
     for(gp in 2L:length(local$groups)){
       isdefault <- names(local$groups)[gp] == local$groups$default_group
       iscurrent <- names(local$groups)[gp] == package_env$currentgroup
@@ -83,12 +83,12 @@ gy_info <- function(){
         cat("\t'", names(local$groups)[gp], "'\n", sep="")
       }
     }
-    cat("The current group '", package_env$currentgroup, "' has the following users:\n", sep="")
+    if(!silent) cat("The current group '", package_env$currentgroup, "' has the following users:\n", sep="")
     ss <- try({
       users <- get_users(all_users=TRUE, group=package_env$currentgroup, refresh=FALSE, silent=TRUE)
     })
     if(inherits(ss, "try-error")){
-      cat("\t[Unable to download user list]\n", sep="")
+      if(!silent) cat("\t[Unable to download user list]\n", sep="")
     }else{
       usrs <- t(vapply(users, function(x){
         c(unlist(x[c("user","name","email")]), member_since=as.character(x$member_since))
