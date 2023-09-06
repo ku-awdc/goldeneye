@@ -15,7 +15,7 @@ If you already have a profile file, then you can click on the "Select Existing" 
 You also have the option to download a public key file from this tab.  If you want other people to send you encrypted data, then you need to send them this public key file for them to do so.  You can re-download your public key file at any time.
 
 
-#### Step 2:  Encrypt File(s)
+### Step 2:  Encrypt File(s)
 
 Once you have set up / selected your profile, you can begin to encrypt data.  Click on the Browse button to select one or more files to encrypt.  You should then see two sets of options appear:  a text entry box for online/web-based public keys, and another file browser for public keys on your computer.  These options control who else will be able to decrypt the files you encrypt. If you only want to encrypt data for your own use then you can ignore both of these inputs. There is also a check-box to allow decryption by yourself - typically you want to leave this ticked, but sometimes you might want to encrypt data so that you cannot decrypt it yourself later.
 
@@ -26,7 +26,7 @@ Using local public key files means that your collaborator just needs to send you
 Once you are happy with the file selection and encryption settings, then press the "Encrypt and Save" button.  This will encrypt the file(s) and provide you a single encrypted archive file that you can safely store and/or send to collaborators over potentially unsafe channels.
 
 
-#### Step 3:  Decrypt File(s)
+### Step 3:  Decrypt File(s)
 
 The final step is to decrypt an encrypted data file.  Select the Decryot tab, then use the Browser button to select an encrypted file.  You can then choose the folder in which to save the decrypted files - either as a single file or as a zip archive, depending on the number of encryoted files saved.
 
