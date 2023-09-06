@@ -22,7 +22,7 @@ fluidPage(
 					radioButtons("profile",
 						"Select goldeneye profile to use:",
 						choices = profile_choices,
-						selected = character(0),
+						selected = profile_selected,
 						inline = FALSE
 					)
 				)
@@ -43,32 +43,101 @@ fluidPage(
 
 		  ## Password (not for new profile):
 		  conditionalPanel(
-		    "input.profile == 'select' || input.profile == 'default'",
-		    column(6L,
-		      conditionalPanel(
-		        "input.show_password == false",
-		        passwordInput("password_hide",
-		          "Input password:",
-		          value = default_password
+		    "output.status == 1",
+		    fluidRow(
+		      column(6L,
+		        conditionalPanel(
+		          "input.show_password == false",
+		          passwordInput("password_hide",
+		            "Input password:",
+		            value = default_password
+		          )
+		        ),
+		        conditionalPanel(
+		          "input.show_password == true",
+		          textInput("password_show",
+		            "Input password:",
+		            value = default_password
+		          )
+		        ),
+		        checkboxInput("show_password",
+		          "Show password?",
+		          value = FALSE
 		        )
 		      ),
-		      conditionalPanel(
-		        "input.show_password == true",
-		        textInput("password_show",
-		          "Input password:",
-		          value = default_password
+		      column(6L,
+		        actionButton("check_password",
+		          "Check Password"
+		        ),
+		        htmlOutput("password_feedback", width="100%")
+		      )
+		    )
+		  ),
+
+		  ## New profile:
+		  conditionalPanel(
+		    "input.profile == 'new'",
+		    fluidRow(
+		      column(6L,
+		        conditionalPanel(
+		          "input.show_new_password == false",
+		          passwordInput("password_new_hide",
+		            "Select password:",
+		            value = ""
+		          )
+		        ),
+		        conditionalPanel(
+		          "input.show_new_password == true",
+		          textInput("password_new_show",
+		            "Select password:",
+		            value = ""
+		          )
+		        ),
+		        checkboxInput("show_new_password",
+		          "Show password?",
+		          value = FALSE
 		        )
 		      ),
-		      checkboxInput("show_password",
-		        "Show password?",
-		        value = FALSE
+		      column(6L,
+		        conditionalPanel(
+		          "input.show_new_password == false",
+		          passwordInput("password_verify_hide",
+		            "Verify password:",
+		            value = ""
+		          )
+		        ),
+		        conditionalPanel(
+		          "input.show_new_password == true",
+		          textInput("password_verify_show",
+		            "Verify password:",
+		            value = ""
+		          )
+		        )
 		      )
 		    ),
-		    column(6L,
-		      actionButton("check_password",
-		        "Check Password"
-		      ),
-		      htmlOutput("password_feedback", width="100%")
+		    fluidRow(
+		      column(12L,
+		        actionButton("create_profile",
+		          "Create Profile"
+		        ),
+		        htmlOutput("profile_feedback", width="100%")
+		      )
+		    )
+		  ),
+
+		  ## Final validation text and download public file:
+		  conditionalPanel("output.status == 2",
+  		  fluidRow(
+  		    column(12L,
+  		      h5("Profile and password are valid", width="100%")
+  		    )
+  		  ),
+		    fluidRow(
+		      column(12L,
+		        actionButton("download_public",
+		          "Download Public Key File"
+		        )
+		      )
 		    )
 		  )
 		),

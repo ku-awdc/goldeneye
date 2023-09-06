@@ -9,12 +9,14 @@ password_text <- "Please enter your password"
 default <- ""
 default_password <- ""
 profile_choices <- c(`Select Existing` = "select", `Create New` = "new")
+profile_selected <- character(0)
 
-if(!is.null(getOption('goldeneye_path'))){
+if(!is.null(getOption('goldeneye_path')) && file.exists(getOption('goldeneye_path'))){
   default <- readRDS(getOption('goldeneye_path'))$email
   stopifnot(!is.null(default))
   profile_choices <- c(`Default` = "default", `Select Other` = "select", `Create New` = "new")
   names(profile_choices) <- c(str_c("Saved: ", default), "Select Other", "Create New")
+  profile_selected <- "default"
 
   keys <- key_list("goldeneye")
   if(default %in% keys$username){

@@ -8,8 +8,12 @@ setwd(tempdir)
 function(input, output, session) {
 
   rv <- reactiveValues(
+    profile_file = getOption('goldeneye_path'),
+    status = if_else(profile_selected=="default", 1L, 0L),
     password_feedback = password_text
   )
+  output$status <- renderText(rv$status)
+  outputOptions(output, 'status', suspendWhenHidden=FALSE)
 
   observe({
     input$password_show
@@ -21,14 +25,55 @@ function(input, output, session) {
     updateTextInput(session, "password_show", value=input$password_hide)
   })
 
+  observe({
+    input$profile
+    rv$status <- if_else(input$profile=="default", 1L, 0L)
+  })
+
   output$password_feedback <- renderText(str_c("<br>",rv$password_feedback))
 
+  observeEvent(input$check_password, {
 
-  fecrt_analysis <- FecrtAnalysis$new(shiny = TRUE)
+    rv$status <- if_else(input$profile=="default", 1L, 0L)
+    if(!file.exists(rv$profile_file)){
+      rv$password_feedback <- str_c("Error: profile file not found!")
+    }else{
+      if(input$profile=="select"){
+        ## Save new profile location:
+        rv$profile_file <- input$profile_file
+      }
+      ## Check validity of profile:
+      ss <- try({
+        prf <- readRDS(rv$profile_file)
+      })
+      if(inherits(ss,"try-error") || !"email"%in%names(prf)){
+        rv$password_feedback <- str_c("Error: profile file invalid!")
+      }else{
+        ## Attempt to retrieve key as a test:
+        if(input$password_hide!=input$password_show) stop("Hidden and shown passwords not equal!")
+        pass_key <- sodium::hash(charToRaw(str_c(prf$salt,input$password_hide)))
+        ss <- try({
+          test <- sodium::data_decrypt(prf$encr_curve, pass_key)
+        })
+        if(inherits(ss,"try-error")){
+          rv$password_feedback <- str_c("Error: password invalid!")
+        }else{
+          rv$password_feedback <- str_c("Password validated!")
+          rv$status <- 2L
+          if(input$password_hide!=keyring::key_get("goldeneye",prf$email)){
+            keyring::key_set_with_value("goldeneye", prf$email, input$password_hide)
+          }
+        }
+      }
+    }
 
+  })
 
   if(FALSE){
-  rv <- reactiveValues(
+    fecrt_analysis <- FecrtAnalysis$new(shiny = TRUE)
+
+
+    rv <- reactiveValues(
     data_paired = data.frame(PreTreatment=integer(0),PostTreatment=integer(0)),
     data_txt = data.frame(),
     data_ctl = data.frame(),
