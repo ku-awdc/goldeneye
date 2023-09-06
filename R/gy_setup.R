@@ -105,7 +105,7 @@ gy_setup <- function(name=NULL, email=NULL, filename=NULL, path=NULL, append_Rpr
       }
     }
 
-    if(!isTRUE(append_Rprofile)){
+    if(isTRUE(append_Rprofile)){
       cat("\n\n## Added by the goldeneye package on ", as.character(Sys.Date()), ":\n", rprofline, "\n\n", sep="", file=file.path("~", ".Rprofile"), append=TRUE)
       if(!silent) cat("R profile file appended\n")
     }

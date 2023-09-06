@@ -12,7 +12,7 @@
 #'
 #' @rdname gy_zip
 #' @export
-gy_zip <- function(input_files, file=stop("file must be specified (.rfg file extension is recommended)"), compression_level=9, users=character(0), local_user=TRUE, comment="", funs = gy_key_funs("identity")){
+gy_zip <- function(input_files, file=stop("file must be specified (.rfg file extension is recommended)"), compression_level=5, users=character(0), local_user=TRUE, comment="", funs = gy_key_funs("identity")){
 
   stopifnot(all(file.exists(input_files)))
 
