@@ -9,9 +9,6 @@ gy_users(group = NULL, refresh = FALSE)
 \arguments{
 \item{refresh}{}
 }
-\value{
-
-}
 \description{
 Title
 }

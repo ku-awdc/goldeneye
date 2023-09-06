@@ -39,6 +39,9 @@ gy_encrypt <- function(object, users=character(0), local_user=TRUE, comment = ""
     user <- c(user, "local_user")
   }
 
+  ## Ensure we have at least one user:
+  if(length(user)==0L) stop("No decrypt users specified!")
+
   ## Get public keys for all specified users:
   keys <- get_public_keys(user, type="curve")
   user <- names(keys)
@@ -363,8 +366,8 @@ find_key <- function(email, type="curve"){
 
   if(length(allkeys)>1L){
     # TODO: verify that all matched keys are the same
-    allkeys <- allkeys[[1L]]
   }
+  allkeys <- allkeys[[1L]]
 
   return(allkeys)
 }

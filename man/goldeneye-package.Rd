@@ -6,7 +6,7 @@
 \alias{goldeneye-package}
 \title{goldeneye: Sharing Secrets Safely}
 \description{
-The goldeneye package is designed to allow data to safely be shared between R users over insecure channels. While it does require using R, the interfaces are written to be as simple as possible in order to reduce the technical barrier for beginner R users. This package was developed as part of the NordForsk-funded DigiVet project.
+The goldeneye package is designed to allow data to safely be shared between R users over insecure channels. While it does require using R, the interfaces are written to be as simple as possible in order to reduce the technical barrier for beginner R users. A shiny interface is also provided to further simplify usage. This package was developed as part of the NordForsk-funded DigiVet project.
 }
 \author{
 \strong{Maintainer}: Matt Denwood \email{md@sund.ku.dk}

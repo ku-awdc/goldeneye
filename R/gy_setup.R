@@ -7,7 +7,7 @@
 #' @importFrom rstudioapi selectDirectory isAvailable
 #'
 #' @export
-gy_setup <- function(name=NULL, email=NULL, filename=NULL, path=NULL, append_Rprofile=TRUE){
+gy_setup <- function(name=NULL, email=NULL, filename=NULL, path=NULL, append_Rprofile=NULL, silent=FALSE){
 
   cat("#### Setup goldeneye profile ####\n")
 
@@ -16,8 +16,9 @@ gy_setup <- function(name=NULL, email=NULL, filename=NULL, path=NULL, append_Rpr
   if(is.null(email)) email <- readline(prompt="Email:  ")
 
   ## Then password:
+  ## [Note: to set password externally, just set it using keyring]
   if(email %in% key_list("goldeneye")[,"username"]){
-    cat("Note: Re-using existing keyring password associated with email address '", email, "'\n", sep="")
+    if(!silent) cat("Note: Re-using existing keyring password associated with email address '", email, "'\n", sep="")
     pass <- key_get("goldeneye", username=email)
   }else{
     repeat{
@@ -89,18 +90,24 @@ gy_setup <- function(name=NULL, email=NULL, filename=NULL, path=NULL, append_Rpr
   private_save <- list(name=name, email=email, setup_date=Sys.Date(), versions=versions, public_curve=public_curve, public_ed=public_ed, salt=salt, encr_curve=encr_curve, encr_ed=encr_ed, groups=list(default_group=NA_character_))
   saveRDS(private_save, file=file.path(path, filename), compress=FALSE)
 
-  cat("#### Setup complete ####\n")
+  if(!silent) cat("#### Setup complete ####\n")
 
   ## Add the path to the storage file to the user's Rprofile:
 
-  if(append_Rprofile){
+  if(!isFALSE(append_Rprofile)){
     rprofline <- str_c("options(goldeneye_path='", file.path(path, filename), "')\n")
     eval(parse(text=rprofline))
-    cat("In order for goldeneye to work between R sessions, you need\nto add the following line to your R profile:\n", rprofline, "\n")
-    ok <- readline(str_c("To do this automatically (for '", file.path("~", ".Rprofile"), "') type y:  "))
-    if(tolower(ok)=="y"){
+    if(!isTRUE(append_Rprofile)){
+      cat("In order for goldeneye to work between R sessions, you need\nto add the following line to your R profile:\n", rprofline, "\n")
+      ok <- readline(str_c("To do this automatically (for '", file.path("~", ".Rprofile"), "') type y:  "))
+      if(tolower(ok)=="y"){
+        append_Rprofile <- TRUE
+      }
+    }
+
+    if(!isTRUE(append_Rprofile)){
       cat("\n\n## Added by the goldeneye package on ", as.character(Sys.Date()), ":\n", rprofline, "\n\n", sep="", file=file.path("~", ".Rprofile"), append=TRUE)
-      cat("R profile file appended\n")
+      if(!silent) cat("R profile file appended\n")
     }
   }
 

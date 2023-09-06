@@ -9,7 +9,8 @@ gy_setup(
   email = NULL,
   filename = NULL,
   path = NULL,
-  append_Rprofile = TRUE
+  append_Rprofile = NULL,
+  silent = FALSE
 )
 }
 \description{

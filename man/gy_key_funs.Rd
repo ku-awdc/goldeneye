@@ -9,9 +9,6 @@ gy_key_funs(type)
 \arguments{
 \item{type}{}
 }
-\value{
-
-}
 \description{
 Title
 }

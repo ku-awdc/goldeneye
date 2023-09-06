@@ -4,7 +4,7 @@
 \alias{gy_public_file}
 \title{Title}
 \usage{
-gy_public_file(silent = FALSE)
+gy_public_file(file = "goldeneye_public.gyu", silent = FALSE)
 }
 \arguments{
 \item{silent}{}
