@@ -7,7 +7,7 @@
 \usage{
 gy_profile(path = getOption("goldeneye_path"), silent = FALSE)
 
-gy_info()
+gy_info(silent = FALSE)
 }
 \arguments{
 \item{path}{path to goldeneye profile}

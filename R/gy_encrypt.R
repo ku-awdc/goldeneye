@@ -383,8 +383,9 @@ find_key <- function(email, type="curve"){
 
   if(length(allkeys)>1L){
     # TODO: verify that all matched keys are the same
+  }else if(length(allkeys)==1L){
+    allkeys <- allkeys[[1L]]
   }
-  allkeys <- allkeys[[1L]]
 
   return(allkeys)
 }

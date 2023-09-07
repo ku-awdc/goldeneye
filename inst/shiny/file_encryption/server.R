@@ -124,7 +124,7 @@ function(input, output, session) {
         TRUE ~ 0L
       )
     }
-    print(rv$status)
+    #print(rv$status)
 
   })
 
@@ -190,7 +190,7 @@ function(input, output, session) {
       }else{
         rv$setup_feedback <- "Profile created successfully"
         rv$status <- 3L
-        print(rv$status)
+        #print(rv$status)
         rv$user_info <- gy_profile(file.path(tempdir, "goldeneye_private.gyp"))
       }
     }
@@ -235,7 +235,7 @@ function(input, output, session) {
 
     tmpfl <- tempfile(pattern="user", tmpdir=tempdir)
     ss <- try({
-      download.file(input$user_online, tmpfl, quiet=TRUE, mode="wb")
+      download.file(gsub(" ", "", input$user_online), tmpfl, quiet=TRUE, mode="wb")
     })
     if(inherits(ss,"try-error")){
       rv$process_feedback <- "ERROR:  problem downloading from the specified link"

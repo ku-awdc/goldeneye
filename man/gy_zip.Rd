@@ -8,7 +8,7 @@
 gy_zip(
   input_files,
   file = stop("file must be specified (.rfg file extension is recommended)"),
-  compression_level = 9,
+  compression_level = 5,
   users = character(0),
   local_user = TRUE,
   comment = "",
@@ -18,6 +18,7 @@ gy_zip(
 gy_unzip(
   file = stop("file must be specified (.rfg file extension is recommended)"),
   directory = getwd(),
+  unzip = TRUE,
   overwrite = FALSE,
   run_custom = TRUE
 )
