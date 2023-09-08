@@ -55,7 +55,8 @@ Imports:
     cyphr,
     stringr,
     shiny,
-    shinythemes
+    shinythemes,
+    markdown
 Depends:
     R (>= 4.1.0),
     tidyverse
