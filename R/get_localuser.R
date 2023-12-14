@@ -1,3 +1,8 @@
+#' @importFrom utils download.file
+#' @importFrom stringr str_detect str_split
+#' @importFrom tibble as_tibble
+#' @importFrom dplyr mutate arrange
+
 get_localuser <- function(){
   if(is.null(package_env$currentlocal)) gy_profile()
 

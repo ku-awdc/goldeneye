@@ -1,11 +1,16 @@
 #' @name gy_zip
 #' @title Zip and encrypt external files using goldeneye
-#' @param files one or more files to add to the zip archive
+#' @param input_files one or more files to add to the zip archive
+#' @param file the filename to which the encrypted object will be saved
 #' @param compression_level compression level to use on a scale of 1-9 (passed to \code{\link[zip]{zip}})
 #' @param users a character vector of (other) users within your current user group for whom the encrypted file will be decryptable. Alternatively, this can be a vector of paths/urls to public keys, or a mixture of the two.
 #' @param local_user should the current user also be able to decrypt thw file?
 #' @param comment an optional comment that will be sent (unencrypted) along with the file
 #' @param funs optional additional encryption steps: this must be the output of a call to \code{\link{gy_key_funs}}
+#' @param directory the directory to which the decrypted/unzipped files will be saved
+#' @param unzip should the decrypted files also be unzipped?
+#' @param overwrite should the file be overwritten, if it exists?
+#' @param run_custom should any custom decryption functions be run automatically?
 #'
 #' @importFrom zip zip unzip zip_list
 #' @importFrom base64enc base64encode base64decode

@@ -1,3 +1,6 @@
+#' @importFrom shinythemes shinytheme
+#' @importFrom htmltools includeMarkdown
+#' @importFrom markdown mark
 #' @keywords internal
 "_PACKAGE"
 

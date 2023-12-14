@@ -2,13 +2,15 @@
 % Please edit documentation in R/gy_users.R
 \name{gy_users}
 \alias{gy_users}
-\title{Title}
+\title{Obtain a list of users for a given group}
 \usage{
 gy_users(group = NULL, refresh = FALSE)
 }
 \arguments{
-\item{refresh}{}
+\item{group}{the group for which to return users (defaults to the active group)}
+
+\item{refresh}{should the list be refreshed from the remote/online location?}
 }
 \description{
-Title
+Obtain a list of users for a given group
 }

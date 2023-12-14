@@ -1,13 +1,9 @@
 #' @name gy_serialise
 #' @title Serialise and deserialise a list of objects/files
-#' @param object
-#' @param file
-#' @param user
-#' @param local_user
-#' @param ascii
-#' @param version
-#' @param compress
-#' @param overwrite
+#' @param object the object to encrypt
+#' @param files external files to serialise (not yet implemented)
+#' @param method the serialisation method to use (base, qs, or custom)
+#' @param ... arguments passed to the underlying serialisation method
 #'
 #' @importFrom qs qserialize qdeserialize
 #'

@@ -1,4 +1,11 @@
-#' Title
+#' Setup a new goldeyene encryption profile
+#'
+#' @param name your full name
+#' @param email your email address
+#' @param filename the filename to which the profile will be saved
+#' @param path the path in which to save the profile
+#' @param append_Rprofile should the R profile file be appended to automatically load this profile when R is restarted?
+#' @param silent option to suppress output
 #'
 #' @importFrom stringr str_remove str_c
 #' @importFrom getPass getPass

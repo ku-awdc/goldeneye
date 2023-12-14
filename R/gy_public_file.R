@@ -1,7 +1,7 @@
-#' Title
+#' Extract the public key file
 #'
-#' @param file
-#' @param silent
+#' @param file filename to write to
+#' @param silent do this quietly?
 #'
 #' @export
 gy_public_file <- function(file="goldeneye_public.gyu", silent=FALSE){

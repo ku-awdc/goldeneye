@@ -16,7 +16,13 @@ gy_serialize(object, files = character(0), method = "qs", ...)
 gy_deserialize(object, files = TRUE, ...)
 }
 \arguments{
-\item{overwrite}{}
+\item{object}{the object to encrypt}
+
+\item{files}{external files to serialise (not yet implemented)}
+
+\item{method}{the serialisation method to use (base, qs, or custom)}
+
+\item{...}{arguments passed to the underlying serialisation method}
 }
 \description{
 Serialise and deserialise a list of objects/files

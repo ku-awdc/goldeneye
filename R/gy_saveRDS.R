@@ -1,13 +1,16 @@
 #' @name gf_saveRDS
 #' @title Save and read encrypted RDS
-#' @param object
-#' @param file
-#' @param user
-#' @param local_user
-#' @param ascii
-#' @param version
-#' @param compress
-#' @param overwrite
+#'
+#' @param object the object to encrypt
+#' @param file the filename to which the encrypted object will be saved
+#' @param users one or more users who will be authorised to decrypt the file
+#' @param local_user should the local user be able to decrypt the file?
+#' @param comment a comment to include
+#' @param overwrite should the file be overwritten, if it exists?
+#' @param ascii argument passed to saveRDS
+#' @param funs argument passed to saveRDS
+#' @param ... arguments passed to gy_serialise
+#' @param run_custom should any custom decryption functions be run automatically?
 #'
 #' @rdname gy_saveRDS
 #' @export

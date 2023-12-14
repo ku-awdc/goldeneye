@@ -28,6 +28,10 @@ get_public_keys(users, type = "curve")
 \item{comment}{an optional comment that will be sent (unencrypted) along with the file}
 
 \item{funs}{optional additional encryption steps: this must be the output of a call to \code{\link{gy_key_funs}}}
+
+\item{run_custom}{should any custom decryption functions be run automatically?}
+
+\item{type}{the type of public key to return ("curve" or "ed")}
 }
 \description{
 Encrypt and decrypt a pre-serialised object using goldeneye

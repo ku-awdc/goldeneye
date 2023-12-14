@@ -4,6 +4,8 @@
 #' @param path path to goldeneye profile
 #' @param silent option to suppress output to screen
 #'
+#' @importFrom rlang .data
+#' @import magrittr
 
 #' @rdname gy_profile
 #' @export
@@ -62,8 +64,8 @@ gy_info <- function(silent=FALSE){
         c(unlist(x[c("user","name","email")]), member_since=as.character(x$member_since))
       }, character(4))) %>%
         as_tibble() %>%
-        mutate(member_since=as.Date(member_since)) %>%
-        arrange(member_since)
+        mutate(member_since=as.Date(.data$member_since)) %>%
+        arrange(.data$member_since)
       if(redact) usrs$email <- "**@**.**"
       print(usrs)
     }
@@ -94,8 +96,8 @@ gy_info <- function(silent=FALSE){
         c(unlist(x[c("user","name","email")]), member_since=as.character(x$member_since))
       }, character(4))) %>%
         as_tibble() %>%
-        mutate(member_since=as.Date(member_since)) %>%
-        arrange(member_since)
+        mutate(member_since=as.Date(.data$member_since)) %>%
+        arrange(.data$member_since)
       if(redact) usrs$email <- "**@**.**"
       print(usrs)
     }

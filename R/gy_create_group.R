@@ -18,7 +18,7 @@ gy_create_group <- function(group, weblink, password){
 
 
   weblink <- readRDS(getOption("goldeneye_path"))$groups$goldfinger$weblink
-  webinfo <- goldeneye:::refresh_users(weblink)
+  webinfo <- refresh_users(weblink)
   user_info <- webinfo$users
   names(user_info)
 
@@ -47,18 +47,19 @@ gy_create_group <- function(group, weblink, password){
 
   users <- list(usernames=usernames, user_info=sodium::data_encrypt(serialize(user_info, NULL), sodium::hash(charToRaw(webpwd))), message=sodium::data_encrypt(serialize(msg, NULL), sodium::hash(charToRaw(webpwd))), public_curve=public_curve, public_ed=public_ed)
 
-  verification <- goldeneye:::gy_sign(users)
+  verification <- gy_sign(users)
 
   versions <- attr(verification, "versions")
   versions["type"] <- "generic"
   versions["minimum"] <- "0.5.0-1"
   attr(verification, "versions") <- versions
-  stopifnot(goldeneye:::gy_verify(users, verification, silent=TRUE))
+  stopifnot(gy_verify(users, verification, silent=TRUE))
   attr(verification, "user") <- NULL
 
   keys <- list(group="demo22", users=users, verification=verification)
   saveRDS(keys, "demo22.gyg", compress=FALSE)
 
+  webpwd <- NULL
   weblink <- str_c("https://www.costmodds.org/rsc/goldeneye/demo22.gyg#",webpwd,"#md")
 
 

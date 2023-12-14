@@ -1,9 +1,10 @@
 #' @name gy_join_group
 #' @title Join an existing goldeneye user group via a weblink
-#'
-#'
 #' @param weblink the weblink as provided by the group administrator
 #' @param user the username that you want to use for this group
+#' @param make_default should this become the default group?
+#' @param group the name of the group to set
+#' @param silent option to silence output
 #'
 #' @importFrom stringr str_glue
 #'
@@ -44,7 +45,7 @@ gy_join_group <- function(weblink=NULL, user=NULL, make_default=FALSE){
   }else if(!is.null(local$user)){
     tuser <- local$user
   }else if(!is.na(local$groups$default_group)){
-    if(!default_group %in% names(local$group)){
+    if(!"default_group" %in% names(local$group)){
       stop("An unexpected error occured with the groups element of your user profile: please contact the package maintaner with this error message for help")
     }
     tuser <- local$groups[[local$groups$default_group]][["user"]]

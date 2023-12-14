@@ -2,7 +2,7 @@
 % Please edit documentation in R/gy_setup.R
 \name{gy_setup}
 \alias{gy_setup}
-\title{Title}
+\title{Setup a new goldeyene encryption profile}
 \usage{
 gy_setup(
   name = NULL,
@@ -13,6 +13,19 @@ gy_setup(
   silent = FALSE
 )
 }
+\arguments{
+\item{name}{your full name}
+
+\item{email}{your email address}
+
+\item{filename}{the filename to which the profile will be saved}
+
+\item{path}{the path in which to save the profile}
+
+\item{append_Rprofile}{should the R profile file be appended to automatically load this profile when R is restarted?}
+
+\item{silent}{option to suppress output}
+}
 \description{
-Title
+Setup a new goldeyene encryption profile
 }

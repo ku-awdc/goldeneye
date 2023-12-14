@@ -24,7 +24,25 @@ gy_readRDS(
 )
 }
 \arguments{
-\item{overwrite}{}
+\item{object}{the object to encrypt}
+
+\item{file}{the filename to which the encrypted object will be saved}
+
+\item{users}{one or more users who will be authorised to decrypt the file}
+
+\item{local_user}{should the local user be able to decrypt the file?}
+
+\item{comment}{a comment to include}
+
+\item{overwrite}{should the file be overwritten, if it exists?}
+
+\item{ascii}{argument passed to saveRDS}
+
+\item{funs}{argument passed to saveRDS}
+
+\item{...}{arguments passed to gy_serialise}
+
+\item{run_custom}{should any custom decryption functions be run automatically?}
 }
 \description{
 Save and read encrypted RDS

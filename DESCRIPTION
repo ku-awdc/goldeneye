@@ -50,12 +50,16 @@ Imports:
     keyring,
     getPass,
     sodium (>= 1.1),
-    Rcpp (>= 1.0.8),
     qs (>= 0.25),
-    cyphr,
     stringr,
+    dplyr,
+    rlang,
+    tibble,
+    magrittr,
     shiny,
+    shinydashboard,
     shinythemes,
+    htmltools,
     markdown
 Depends:
     R (>= 4.1.0),

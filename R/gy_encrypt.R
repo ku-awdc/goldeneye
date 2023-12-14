@@ -5,6 +5,8 @@
 #' @param local_user should the current user also be able to decrypt thw file?
 #' @param comment an optional comment that will be sent (unencrypted) along with the file
 #' @param funs optional additional encryption steps: this must be the output of a call to \code{\link{gy_key_funs}}
+#' @param run_custom should any custom decryption functions be run automatically?
+#' @param type the type of public key to return ("curve" or "ed")
 #'
 #' @rdname gy_encrypt
 #' @export

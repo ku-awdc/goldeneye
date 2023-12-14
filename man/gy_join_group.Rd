@@ -13,6 +13,12 @@ gy_set_group(group, make_default = FALSE, silent = FALSE)
 \item{weblink}{the weblink as provided by the group administrator}
 
 \item{user}{the username that you want to use for this group}
+
+\item{make_default}{should this become the default group?}
+
+\item{group}{the name of the group to set}
+
+\item{silent}{option to silence output}
 }
 \description{
 Join an existing goldeneye user group via a weblink

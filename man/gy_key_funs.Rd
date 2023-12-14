@@ -2,13 +2,13 @@
 % Please edit documentation in R/gy_key_funs.R
 \name{gy_key_funs}
 \alias{gy_key_funs}
-\title{Title}
+\title{Obtain key functions}
 \usage{
 gy_key_funs(type)
 }
 \arguments{
-\item{type}{}
+\item{type}{type of key function (only "identity" is currently supported)}
 }
 \description{
-Title
+Obtain key functions
 }

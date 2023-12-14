@@ -2,13 +2,15 @@
 % Please edit documentation in R/gy_public_file.R
 \name{gy_public_file}
 \alias{gy_public_file}
-\title{Title}
+\title{Extract the public key file}
 \usage{
 gy_public_file(file = "goldeneye_public.gyu", silent = FALSE)
 }
 \arguments{
-\item{silent}{}
+\item{file}{filename to write to}
+
+\item{silent}{do this quietly?}
 }
 \description{
-Title
+Extract the public key file
 }

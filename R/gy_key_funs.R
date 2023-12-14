@@ -1,11 +1,8 @@
-#' Title
+#' Obtain key functions
 #'
-#' @param type
+#' @param type type of key function (only "identity" is currently supported)
 #'
-#' @return
 #' @export
-#'
-#' @examples
 gy_key_funs <- function(type){
 
   stopifnot(type=="identity")
