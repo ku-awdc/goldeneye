@@ -1,7 +1,7 @@
 Package: goldeneye
 Title: Sharing Secrets Safely
-Date: 2023-09-07
-Version: 0.6.1-1
+Date: 2023-12-19
+Version: 0.6.2-1
 Authors@R: 
     c(
     person(given = "Matt",
